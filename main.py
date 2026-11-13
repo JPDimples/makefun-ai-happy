@@ -15,7 +15,14 @@ def main():
     out = Path(os.environ.get("MAKEFUN_OUTPUT_DIR", "/output"))
     out.mkdir(parents=True, exist_ok=True)
     src = Path(__file__).resolve().parent / "entry.png"
-    shutil.copyfile(src, out / "entry.png")
+    if not src.is_file():
+        raise FileNotFoundError(f"entry image missing: {src}")
+    if src.stat().st_size > 1048576:
+        raise ValueError("entry image is over the 1 MiB limit")
+    dest = out / "entry.png"
+    shutil.copyfile(src, dest)
+    if dest.stat().st_size != src.stat().st_size:
+        raise ValueError("copied entry image differs from the source")
 
 
 if __name__ == "__main__":
